@@ -22,10 +22,14 @@
     "appId": "org.tanasuq.tmail",
     "productName": "Tmail",
     "asar": true,
-    "directories": { "output": "release" },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
     "files": ["dist/**/*", "package.json"],
     "artifactName": "Tmail-Setup-${version}-${arch}.${ext}",
     "win": {
+      "icon": "build/icon.ico",
       "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": {
