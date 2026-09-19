@@ -1,0 +1,13 @@
+node_modules/
+dist/
+release/
+coverage/
+.nas-autopilot/
+*.log
+*.tmp
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
