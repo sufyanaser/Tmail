@@ -1,12 +1,16 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow, Menu, session, shell, Tray, type Rectangle, type Session } from 'electron';
+import { app, BrowserWindow, Menu, Notification, session, shell, Tray, type Rectangle, type Session } from 'electron';
+import electronUpdater from 'electron-updater';
 import { isSafeExternalUrl, isTrustedLarkUrl } from './security.js';
+
+const { autoUpdater } = electronUpdater;
 
 const APP_ID = 'org.tanasuq.tmail';
 const SESSION_PARTITION = 'persist:tmail';
 const MAIL_URL = 'https://cjp7nj6oqqn2.jp.larksuite.com/mail';
+const UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const SUPPORTED_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -162,6 +166,40 @@ async function createTray(): Promise<void> {
   tray.on('double-click', showMainWindow);
 }
 
+function configureAutoUpdates(): void {
+  if (!app.isPackaged || process.argv.includes('--disable-updates')) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.allowPrerelease = false;
+  autoUpdater.logger = console;
+
+  autoUpdater.on('update-available', (info) => {
+    console.info(`Tmail update ${info.version} is available and will download automatically.`);
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    console.info(`Tmail update ${info.version} is ready to install.`);
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Tmail update ready',
+        body: `Version ${info.version} will install automatically when Tmail closes.`,
+      }).show();
+    }
+  });
+  autoUpdater.on('error', (error) => {
+    console.error('Tmail automatic update check failed.', error);
+  });
+
+  const checkForUpdates = (): void => {
+    void autoUpdater.checkForUpdates().catch((error: unknown) => {
+      console.error('Unable to check for a Tmail update.', error);
+    });
+  };
+
+  setTimeout(checkForUpdates, 15_000);
+  setInterval(checkForUpdates, UPDATE_INTERVAL_MS);
+}
+
 const singleInstanceLock = app.requestSingleInstanceLock();
 if (!singleInstanceLock) app.quit();
 else app.on('second-instance', showMainWindow);
@@ -178,6 +216,7 @@ app.whenReady().then(async () => {
   }
   mainWindow = createMainWindow();
   await createTray();
+  configureAutoUpdates();
   app.on('activate', showMainWindow);
 }).catch((error: unknown) => {
   console.error('Tmail failed to initialize.', error);

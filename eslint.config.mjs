@@ -23,7 +23,7 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: { process: 'readonly' },
+      globals: { console: 'readonly', process: 'readonly' },
     },
   },
 );
