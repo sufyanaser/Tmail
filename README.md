@@ -22,6 +22,10 @@ npm run dist:win
 
 The unpacked application is written to `release/win-unpacked`, and the NSIS installer is written to `release/`.
 
+## Automatic updates
+
+Installed builds check the public GitHub Releases feed shortly after startup and every six hours. A newer stable release downloads in the background and installs automatically when Tmail closes. Release assets must include the NSIS installer, its block map, and `latest.yml`.
+
 ## First run
 
 1. Install and open **Tmail**.
@@ -32,4 +36,6 @@ The unpacked application is written to `release/win-unpacked`, and the NSIS inst
 ## Limitations
 
 Lark currently uses the same `/mail` URL for both the personal mailbox and a selected public mailbox. Tmail preserves the Lark session, but it does not inject scripts into Lark or alter mailbox permissions to force a public mailbox as the account identity.
+
+The Windows installer is unsigned until an organization code-signing certificate is configured. Windows SmartScreen may therefore display an unknown-publisher warning.
 
